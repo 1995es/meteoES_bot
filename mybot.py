@@ -2,11 +2,12 @@ import telebot
 import time
 import sys
 import logging
+import params
+from objects import Response
 from telebot import types
 
-API_TOKEN = ''
+bot = telebot.TeleBot(params.API_TOKEN)
 
-bot = telebot.TeleBot(API_TOKEN)
 telebot.logger.setLevel(logging.DEBUG)
 logger = telebot.logger
 
@@ -22,17 +23,17 @@ def default_query(inline_query):
 
         #send to the user
         location = inline_query.query
+        resp1 = Response('titulo 1', 'El tiempo en' + location)
+        resp2 = Response('titulo 2', 'El tiempo en' + location)
+        resp3 = Response('titulo 3', 'El tiempo en' + location)
+
         r1 = types.InlineQueryResultArticle(
-            '1', 'El tiempo ahora en ' + location, types.InputTextMessageContent(
-            'Contenido))
+            '1', resp1.title, types.InputTextMessageContent(resp1.content))
         r2 = types.InlineQueryResultArticle(
-            '2', 'El tiempo esta noche en' + location, types.InputTextMessageContent(
-            'Contenido'))
+            '2', resp2.title, types.InputTextMessageContent(resp2.content))
         r3 = types.InlineQueryResultArticle(
-            '3', 'El tiempo manana en' + location, types.InputTextMessageContent(
-            'Contenido'))
-        bot.answer_inline_query(inline_query.id, [
-                                r1, r2, r3], None, None, None, 'Recibe alertas del tiempo', 'x')
+            '3', resp3.title, types.InputTextMessageContent(resp3.content))
+        bot.answer_inline_query(inline_query.id, [r1, r2, r3], None, None, None, 'Recibe alertas del tiempo', 'x')
     except Exception as e:
         print(e)
 
