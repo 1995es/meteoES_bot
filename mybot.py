@@ -5,14 +5,14 @@ import logging
 import params
 from objects import Response
 from telebot import types
-
+from request import weather
 bot = telebot.TeleBot(params.API_TOKEN)
 
 telebot.logger.setLevel(logging.DEBUG)
 logger = telebot.logger
 
 
-@bot.inline_handler(lambda query: len(query.query) > 0)
+@bot.inline_handler(lambda query: len(query.query) > 3)
 def default_query(inline_query):
     try:
         #check that the query is a location
@@ -23,16 +23,24 @@ def default_query(inline_query):
 
         #send to the user
         location = inline_query.query
-        resp1 = Response('titulo 1', 'El tiempo en' + location)
-        resp2 = Response('titulo 2', 'El tiempo en' + location)
-        resp3 = Response('titulo 3', 'El tiempo en' + location)
+        response = weather(location)
+
+        html1 = 'El tiempo actual en ' + location + 'es <b>'+response['currently']['summary'] + '</b>'
+        html2 = '<a href="http://www.example.com/">inline URL</a> <a href="tg://user?id='+str(inline_query.from_user.id)+'">inline mention of a user</a>'
+        html3 = ' <code>inline fixed-width code</code> <pre>pre-formatted fixed-width code block</pre>'
+        resp1 = Response('El tiempo actual en ' + location, html1 )
+        resp2 = Response('titulo 2', html2)
+        resp3 = Response('titulo 3', html3)
 
         r1 = types.InlineQueryResultArticle(
-            '1', resp1.title, types.InputTextMessageContent(resp1.content))
+            id = '1', 
+            title = resp1.title, 
+            input_message_content = types.InputTextMessageContent(message_text=resp1.content, parse_mode='HTML'))
         r2 = types.InlineQueryResultArticle(
-            '2', resp2.title, types.InputTextMessageContent(resp2.content))
+            '2', resp2.title,             
+            input_message_content = types.InputTextMessageContent(message_text=resp2.content, parse_mode='HTML'))
         r3 = types.InlineQueryResultArticle(
-            '3', resp3.title, types.InputTextMessageContent(resp3.content))
+            '3', resp3.title,input_message_content = types.InputTextMessageContent(message_text=resp3.content, parse_mode='HTML'))
         bot.answer_inline_query(inline_query.id, [r1, r2, r3], None, None, None, 'Recibe alertas del tiempo', 'x')
     except Exception as e:
         print(e)
